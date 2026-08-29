@@ -1,6 +1,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.Abstract;
+/// <summary>
+/// Runs the build-time step that writes generated WebP image-optimization output.
+/// </summary>
 public interface IImageOptimizerWebpWriteRunner
 {
     /// <summary>
