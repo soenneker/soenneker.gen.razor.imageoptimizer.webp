@@ -1,10 +1,16 @@
 using Microsoft.CodeAnalysis;
-
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp;
-
+    /// <summary>
+    /// Initializes the image optimizer webp generator so it is ready for use.
+    /// </summary>
+    /// <param name="context">Roslyn initialization context used to register the source generator.</param>
 [Generator]
 public sealed class ImageOptimizerWebpGenerator : IIncrementalGenerator
 {
+    /// <summary>
+    /// Initializes the Image Optimizer Webp Generator so it is ready for use.
+    /// </summary>
+    /// <param name="context">HTTP context containing the Authorization header.</param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(static ctx =>

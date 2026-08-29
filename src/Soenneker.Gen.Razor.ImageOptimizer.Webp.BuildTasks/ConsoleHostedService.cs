@@ -4,18 +4,24 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.Abstract;
-
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks;
-
 public sealed class ConsoleHostedService : IHostedService
 {
     private readonly ILogger<ConsoleHostedService> _logger;
     private readonly IHostApplicationLifetime _appLifetime;
     private readonly IImageOptimizerWebpWriteRunner _runner;
     private readonly BuildTasksCommandLineArgs _args;
-
+    /// <summary>
+    /// Starts the console hosted service and begins its background work.
+    /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes after the console hosted service has started.</returns>
     private int? _exitCode;
-
+    /// <summary>
+    /// Stops the console hosted service and waits for its background work to finish.
+    /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes after the console hosted service has stopped.</returns>
     public ConsoleHostedService(ILogger<ConsoleHostedService> logger, IHostApplicationLifetime appLifetime,
         IImageOptimizerWebpWriteRunner runner, BuildTasksCommandLineArgs args)
     {
@@ -25,6 +31,11 @@ public sealed class ConsoleHostedService : IHostedService
         _args = args;
     }
 
+    /// <summary>
+    /// Starts the Console Hosted Service and begins its background work.
+    /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes after the Console Hosted Service has started.</returns>
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
         _appLifetime.ApplicationStarted.Register(() =>
@@ -50,6 +61,11 @@ public sealed class ConsoleHostedService : IHostedService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Stops the Console Hosted Service and waits for its background work to finish.
+    /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes after the Console Hosted Service has stopped.</returns>
     public Task StopAsync(CancellationToken cancellationToken = default)
     {
         Environment.ExitCode = _exitCode.GetValueOrDefault(-1);

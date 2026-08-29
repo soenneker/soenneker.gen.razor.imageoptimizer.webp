@@ -4,18 +4,24 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks;
-
 public sealed class Program
 {
     private static CancellationTokenSource? _cts;
-
+    /// <summary>
+    /// Runs the application using the supplied command-line arguments.
+    /// </summary>
+    /// <param name="args">Command-line arguments passed to the application.</param>
+    /// <returns>A task that completes when the application exits.</returns>
     public static async Task Main(string[] args)
     {
         _cts = new CancellationTokenSource();
         Console.CancelKeyPress += OnCancelKeyPress;
-
+    /// <summary>
+    /// Adds the create host builder program utility to the class list.
+    /// </summary>
+    /// <param name="args">Command-line arguments passed to the application.</param>
+    /// <returns>A host builder configured with the application services and settings.</returns>
         try
         {
             await CreateHostBuilder(args).RunConsoleAsync(_cts.Token);
@@ -32,6 +38,11 @@ public sealed class Program
         }
     }
 
+    /// <summary>
+    /// Adds the create host builder Program utility to the class list.
+    /// </summary>
+    /// <param name="args">Command-line arguments passed to the application.</param>
+    /// <returns>A host builder configured with the application services and settings.</returns>
     public static IHostBuilder CreateHostBuilder(string[] args)
     {
         return Host.CreateDefaultBuilder(args)
