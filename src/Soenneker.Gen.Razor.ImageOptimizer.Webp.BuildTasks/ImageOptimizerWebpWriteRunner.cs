@@ -10,7 +10,6 @@ using Soenneker.Libvips.Util.Options;
 
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks;
 
-/// <inheritdoc cref="IImageOptimizerWebpWriteRunner"/>
 public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunner
 {
     private readonly ILibvipsUtil _libvipsUtil;
@@ -106,11 +105,20 @@ public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunn
                 continue;
             }
 
+            string outputDirectory = Path.GetDirectoryName(output)!;
+            Directory.CreateDirectory(outputDirectory);
+            string temporaryOutput = Path.Combine(outputDirectory, $".{Path.GetFileName(output)}.{Guid.NewGuid():N}.tmp.webp");
+
             try
             {
-                await _libvipsUtil.ConvertToWebp(source, output, options, cancellationToken);
+                await _libvipsUtil.ConvertToWebp(source, temporaryOutput, options, cancellationToken);
+                File.Move(temporaryOutput, output, true);
                 generated++;
                 Console.WriteLine($"Optimized {Path.GetRelativePath(wwwRoot, source)} -> {output}");
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
             }
             catch (Exception exception)
             {
@@ -118,6 +126,10 @@ public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunn
                 await Console.Error.WriteLineAsync($"Failed to optimize '{source}' as WebP: {exception.Message}");
                 if (failOnError)
                     return 1;
+            }
+            finally
+            {
+                File.Delete(temporaryOutput);
             }
         }
 

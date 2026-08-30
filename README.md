@@ -1,6 +1,7 @@
 [![](https://img.shields.io/nuget/v/soenneker.gen.razor.imageoptimizer.webp.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.gen.razor.imageoptimizer.webp/)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.gen.razor.imageoptimizer.webp/publish-package.yml?style=for-the-badge)](https://github.com/soenneker/soenneker.gen.razor.imageoptimizer.webp/actions/workflows/publish-package.yml)
 [![](https://img.shields.io/nuget/dt/soenneker.gen.razor.imageoptimizer.webp.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.gen.razor.imageoptimizer.webp/)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.gen.razor.imageoptimizer.webp/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.gen.razor.imageoptimizer.webp/actions/workflows/codeql.yml)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Gen.Razor.ImageOptimizer.Webp
 
@@ -62,9 +63,11 @@ Set `ImageOptimizerWebpOutputPath` to write generated files elsewhere. Relative 
 ## Build behavior
 
 - Missing `wwwroot` directories are skipped successfully.
-- Outputs newer than their source are skipped unless `ImageOptimizerWebpForce` is `true`.
+- Outputs at least as new as their source are skipped unless `ImageOptimizerWebpForce` is `true`.
 - Output directories are created automatically.
-- Conflicting source names are detected before an output is overwritten.
+- A completed temporary encode replaces the final output, so an encoder failure does not destroy the previous valid asset.
+- Conflicting source names are detected before an output is overwritten. Including `webp` in `ImageOptimizerWebpSourceExtensions` is rejected to protect source files.
+- `ImageOptimizerWebpFailOnError=false` reports an image failure and continues with the remaining inputs. Requested cancellation always stops the task.
 - Design-time and cross-targeting builds do not run the optimizer.
 - Windows x64 and Linux x64 libvips tools are bundled through `Soenneker.Libvips.Util`.
 

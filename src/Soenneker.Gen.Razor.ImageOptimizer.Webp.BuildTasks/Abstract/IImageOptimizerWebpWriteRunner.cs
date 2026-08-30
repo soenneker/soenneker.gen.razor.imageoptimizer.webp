@@ -2,15 +2,15 @@ using System.Threading;
 using System.Threading.Tasks;
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.Abstract;
 /// <summary>
-/// Runs the build-time step that writes generated WebP image-optimization output.
+/// Runs the WebP build-time optimizer from its command-line arguments.
 /// </summary>
 public interface IImageOptimizerWebpWriteRunner
 {
     /// <summary>
-    /// Runs image Optimizer Webp Write Runner for the Image Optimizer Webp Write Runner.
+    /// Discovers configured source images and writes their WebP counterparts.
     /// </summary>
-    /// <param name="args">Command-line arguments passed to the application.</param>
-    /// <param name="cancellationToken">Token used to cancel the operation.</param>
-    /// <returns>A task whose result is the requested value.</returns>
+    /// <param name="args">Optimizer command-line arguments supplied by the MSBuild target.</param>
+    /// <param name="cancellationToken">Cancels discovery or conversion.</param>
+    /// <returns>Zero when the run succeeds; otherwise a nonzero process exit code.</returns>
     ValueTask<int> Run(string[] args, CancellationToken cancellationToken);
 }
