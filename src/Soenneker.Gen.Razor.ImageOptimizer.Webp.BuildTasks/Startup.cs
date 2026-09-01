@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.Abstract;
 using Soenneker.Libvips.Util.Registrars;
+using Soenneker.Utils.Directory.Registrars;
+using Soenneker.Utils.File.Registrars;
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks;
 public static class Startup
 {
@@ -11,6 +13,8 @@ public static class Startup
     public static void ConfigureServices(IServiceCollection services)
     {
         services.AddSingleton<IImageOptimizerWebpWriteRunner, ImageOptimizerWebpWriteRunner>();
+        services.AddDirectoryUtilAsSingleton();
+        services.AddFileUtilAsSingleton();
         services.AddLibvipsUtilAsSingleton();
         services.AddHostedService<ConsoleHostedService>();
     }
