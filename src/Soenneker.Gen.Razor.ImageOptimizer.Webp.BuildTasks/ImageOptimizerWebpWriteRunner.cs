@@ -12,6 +12,7 @@ using Soenneker.Utils.File.Abstract;
 
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks;
 
+/// <inheritdoc cref="IImageOptimizerWebpWriteRunner" />
 public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunner
 {
     private readonly ILibvipsUtil _libvipsUtil;
