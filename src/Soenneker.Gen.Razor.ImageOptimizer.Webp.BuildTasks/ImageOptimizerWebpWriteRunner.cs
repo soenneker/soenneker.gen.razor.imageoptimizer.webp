@@ -12,7 +12,6 @@ using Soenneker.Utils.File.Abstract;
 
 namespace Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks;
 
-/// <inheritdoc cref="IImageOptimizerWebpWriteRunner" />
 public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunner
 {
     private readonly ILibvipsUtil _libvipsUtil;
@@ -56,7 +55,7 @@ public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunn
             return 0;
         }
 
-        var options = new LibvipsOptions
+        var options = new WebpOptions
         {
             Quality = quality,
             Effort = effort,
@@ -68,7 +67,7 @@ public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunn
     }
 
     private async ValueTask<int> Optimize(string wwwRoot, string? outputRoot, IReadOnlyCollection<string> sourceExtensions,
-        LibvipsOptions options, bool force, bool failOnError, CancellationToken cancellationToken)
+        WebpOptions options, bool force, bool failOnError, CancellationToken cancellationToken)
     {
         var extensions = new HashSet<string>(sourceExtensions.Select(extension => "." + extension), StringComparer.OrdinalIgnoreCase);
         string[] sources = (await _fileUtil.GetAllFileNamesInDirectoryRecursively(wwwRoot, log: false, cancellationToken))
