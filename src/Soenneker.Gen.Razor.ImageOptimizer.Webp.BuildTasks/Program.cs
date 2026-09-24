@@ -1,5 +1,4 @@
 using Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.Abstract;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -18,11 +17,6 @@ public sealed class Program
     {
         _cts = new CancellationTokenSource();
         Console.CancelKeyPress += OnCancelKeyPress;
-    /// <summary>
-    /// Adds the create host builder program utility to the class list.
-    /// </summary>
-    /// <param name="args">Command-line arguments passed to the application.</param>
-    /// <returns>A host builder configured with the application services and settings.</returns>
         try
         {
             var services = new ServiceCollection();
@@ -47,26 +41,6 @@ public sealed class Program
             Console.CancelKeyPress -= OnCancelKeyPress;
             _cts.Dispose();
         }
-    }
-
-    /// <summary>
-    /// Adds the create host builder Program utility to the class list.
-    /// </summary>
-    /// <param name="args">Command-line arguments passed to the application.</param>
-    /// <returns>A host builder configured with the application services and settings.</returns>
-    public static IHostBuilder CreateHostBuilder(string[] args)
-    {
-        return Host.CreateDefaultBuilder(args)
-            .ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                logging.AddConsole();
-            })
-            .ConfigureServices((_, services) =>
-            {
-                services.AddSingleton(new BuildTasksCommandLineArgs(args));
-                Startup.ConfigureServices(services);
-            });
     }
 
     private static void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs eventArgs)
