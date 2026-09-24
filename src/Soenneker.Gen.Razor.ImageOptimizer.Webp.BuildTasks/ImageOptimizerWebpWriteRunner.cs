@@ -63,7 +63,19 @@ public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunn
             StripMetadata = stripMetadata
         };
 
-        return await Optimize(wwwRoot, outputRoot, sourceExtensions, options, force, failOnError, cancellationToken);
+        string settingsPath = GetFullPath(GetOptional(map, "--cachePath") ?? "obj/imageoptimizer-webp/settings.txt", projectDirectory!);
+        string settings = $"{quality}|{effort}|{lossless}|{stripMetadata}|{wwwRoot}|{outputRoot}|{string.Join(';', sourceExtensions)}|{typeof(ImageOptimizerWebpWriteRunner).Assembly.ManifestModule.ModuleVersionId}";
+        string? previousSettings = File.Exists(settingsPath)
+            ? await File.ReadAllTextAsync(settingsPath, cancellationToken)
+            : null;
+        int result = await Optimize(wwwRoot, outputRoot, sourceExtensions, options,
+            force || !string.Equals(settings, previousSettings, StringComparison.Ordinal), failOnError, cancellationToken);
+        if (result == 0 && failOnError && !string.Equals(settings, previousSettings, StringComparison.Ordinal))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
+            await File.WriteAllTextAsync(settingsPath, settings, cancellationToken);
+        }
+        return result;
     }
 
     private async ValueTask<int> Optimize(string wwwRoot, string? outputRoot, IReadOnlyCollection<string> sourceExtensions,

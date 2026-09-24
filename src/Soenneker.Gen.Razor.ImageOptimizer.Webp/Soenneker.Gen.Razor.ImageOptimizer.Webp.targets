@@ -1,6 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup>
+        <_ImageOptimizerWebpTargetsPath>$(MSBuildThisFileFullPath)</_ImageOptimizerWebpTargetsPath>
         <_ImageOptimizerWebpBuildTasksDllFromPackage>$([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)', 'Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.dll'))</_ImageOptimizerWebpBuildTasksDllFromPackage>
         <_ImageOptimizerWebpBuildTasksDllFromBuildTransitive>$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)', '..', 'buildTransitive', 'Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.dll'))))</_ImageOptimizerWebpBuildTasksDllFromBuildTransitive>
         <_ImageOptimizerWebpBuildTasksDllFromProject>$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildThisFileDirectory)', '..', 'Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks', 'bin', '$(Configuration)', 'Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.dll'))))</_ImageOptimizerWebpBuildTasksDllFromProject>
@@ -15,6 +16,7 @@
         <ImageOptimizerWebpEffort Condition="'$(ImageOptimizerWebpEffort)'==''">4</ImageOptimizerWebpEffort>
         <ImageOptimizerWebpLossless Condition="'$(ImageOptimizerWebpLossless)'==''">false</ImageOptimizerWebpLossless>
         <ImageOptimizerWebpStripMetadata Condition="'$(ImageOptimizerWebpStripMetadata)'==''">true</ImageOptimizerWebpStripMetadata>
+        <ImageOptimizerWebpCachePath Condition="'$(ImageOptimizerWebpCachePath)'==''">$(BaseIntermediateOutputPath)imageoptimizer-webp/settings.txt</ImageOptimizerWebpCachePath>
         <ImageOptimizerWebpForce Condition="'$(ImageOptimizerWebpForce)'==''">false</ImageOptimizerWebpForce>
         <ImageOptimizerWebpFailOnError Condition="'$(ImageOptimizerWebpFailOnError)'==''">true</ImageOptimizerWebpFailOnError>
 
@@ -23,7 +25,34 @@
         <_ImageOptimizerWebpOutputPathArg Condition="'$(ImageOptimizerWebpOutputPath)'!=''"> --outputPath &quot;$(ImageOptimizerWebpOutputPath)&quot;</_ImageOptimizerWebpOutputPathArg>
     </PropertyGroup>
 
+
+    <!-- Keep the inventory outside the generated asset directories. Recording file names
+         and timestamps catches additions, removals, missing outputs, and option changes. -->
+    <Target Name="PrepareImageOptimizerWebpInputs"
+            Condition="'$(DesignTimeBuild)'!='true' and '$(IsCrossTargetingBuild)'!='true' and '$(ImageOptimizerWebpEnabled)'=='true'">
+        <PropertyGroup>
+            <_ImageOptimizerWebpInputManifest>$(IntermediateOutputPath)imageoptimizer-webp.inputs</_ImageOptimizerWebpInputManifest>
+            <_ImageOptimizerWebpSuccessStamp>$(IntermediateOutputPath)imageoptimizer-webp.stamp</_ImageOptimizerWebpSuccessStamp>
+        </PropertyGroup>
+        <MakeDir Directories="$(IntermediateOutputPath)" />
+        <ItemGroup>
+            <_ImageOptimizerWebpTrackedFiles Remove="@(_ImageOptimizerWebpTrackedFiles)" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(ImageOptimizerWebpWwwRootPath)/**/*" Exclude="$(_ImageOptimizerWebpInputManifest);$(_ImageOptimizerWebpSuccessStamp)" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(ImageOptimizerWebpOutputPath)/**/*" Exclude="$(_ImageOptimizerWebpInputManifest);$(_ImageOptimizerWebpSuccessStamp)" Condition="'$(ImageOptimizerWebpOutputPath)'!=''" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(ImageOptimizerWebpManifestPath)" Condition="'$(ImageOptimizerWebpManifestPath)'!='' and Exists('$(ImageOptimizerWebpManifestPath)')" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(ImageOptimizerWebpCachePath)" Condition="'$(ImageOptimizerWebpCachePath)'!='' and Exists('$(ImageOptimizerWebpCachePath)')" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(_ImageOptimizerWebpTargetsPath);$(MSBuildProjectFullPath);$(MSBuildAllProjects);$(ProjectAssetsFile);$(ImageOptimizerWebpBuildTasksDllPath)" />
+        </ItemGroup>
+        <WriteLinesToFile File="$(_ImageOptimizerWebpInputManifest)"
+                          Lines="@(_ImageOptimizerWebpTrackedFiles->'%(FullPath)|%(ModifiedTime)');ImageOptimizerWebpCachePath=$(ImageOptimizerWebpCachePath);ImageOptimizerWebpOutputPath=$(ImageOptimizerWebpOutputPath);ImageOptimizerWebpBuildTasksDllPath=$(ImageOptimizerWebpBuildTasksDllPath);ImageOptimizerWebpEffort=$(ImageOptimizerWebpEffort);ImageOptimizerWebpEnabled=$(ImageOptimizerWebpEnabled);ImageOptimizerWebpFailOnError=$(ImageOptimizerWebpFailOnError);ImageOptimizerWebpForce=$(ImageOptimizerWebpForce);ImageOptimizerWebpLossless=$(ImageOptimizerWebpLossless);ImageOptimizerWebpQuality=$(ImageOptimizerWebpQuality);ImageOptimizerWebpSourceExtensions=$(ImageOptimizerWebpSourceExtensions);ImageOptimizerWebpStripMetadata=$(ImageOptimizerWebpStripMetadata);ImageOptimizerWebpWwwRootPath=$(ImageOptimizerWebpWwwRootPath)"
+                          Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <Delete Files="$(_ImageOptimizerWebpSuccessStamp)" Condition="'$(ImageOptimizerWebpForce)'=='true' or '$(ImageOptimizerWebpFailOnError)'!='true'" />
+    </Target>
+
     <Target Name="RunRazorImageOptimizerWebpBuildTasks"
+            DependsOnTargets="PrepareImageOptimizerWebpInputs"
+            Inputs="$(_ImageOptimizerWebpInputManifest)"
+            Outputs="$(_ImageOptimizerWebpSuccessStamp)"
             BeforeTargets="BeforeBuild"
             Condition="'$(DesignTimeBuild)'!='true' and '$(IsCrossTargetingBuild)'!='true' and '$(ImageOptimizerWebpEnabled)'=='true'">
 
@@ -36,6 +65,18 @@
               ConsoleToMSBuild="true"
               StandardOutputImportance="high"
               StandardErrorImportance="high"
-              Command='dotnet exec &quot;$(ImageOptimizerWebpBuildTasksDllPath)&quot; --projectDir &quot;$(_ImageOptimizerWebpProjectDir)&quot; --wwwRoot &quot;$(ImageOptimizerWebpWwwRootPath)&quot; --sourceExtensions &quot;$(ImageOptimizerWebpSourceExtensions)&quot; --quality &quot;$(ImageOptimizerWebpQuality)&quot; --effort &quot;$(ImageOptimizerWebpEffort)&quot; --lossless &quot;$(ImageOptimizerWebpLossless)&quot; --stripMetadata &quot;$(ImageOptimizerWebpStripMetadata)&quot; --force &quot;$(ImageOptimizerWebpForce)&quot; --failOnError &quot;$(ImageOptimizerWebpFailOnError)&quot;$(_ImageOptimizerWebpOutputPathArg)' />
+              Command='dotnet exec &quot;$(ImageOptimizerWebpBuildTasksDllPath)&quot; --projectDir &quot;$(_ImageOptimizerWebpProjectDir)&quot; --wwwRoot &quot;$(ImageOptimizerWebpWwwRootPath)&quot; --sourceExtensions &quot;$(ImageOptimizerWebpSourceExtensions)&quot; --quality &quot;$(ImageOptimizerWebpQuality)&quot; --effort &quot;$(ImageOptimizerWebpEffort)&quot; --lossless &quot;$(ImageOptimizerWebpLossless)&quot; --stripMetadata &quot;$(ImageOptimizerWebpStripMetadata)&quot; --cachePath &quot;$(ImageOptimizerWebpCachePath)&quot; --force &quot;$(ImageOptimizerWebpForce)&quot; --failOnError &quot;$(ImageOptimizerWebpFailOnError)&quot;$(_ImageOptimizerWebpOutputPathArg)' />
+        <ItemGroup>
+            <_ImageOptimizerWebpTrackedFiles Remove="@(_ImageOptimizerWebpTrackedFiles)" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(ImageOptimizerWebpWwwRootPath)/**/*" Exclude="$(_ImageOptimizerWebpInputManifest);$(_ImageOptimizerWebpSuccessStamp)" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(ImageOptimizerWebpOutputPath)/**/*" Exclude="$(_ImageOptimizerWebpInputManifest);$(_ImageOptimizerWebpSuccessStamp)" Condition="'$(ImageOptimizerWebpOutputPath)'!=''" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(ImageOptimizerWebpManifestPath)" Condition="'$(ImageOptimizerWebpManifestPath)'!='' and Exists('$(ImageOptimizerWebpManifestPath)')" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(ImageOptimizerWebpCachePath)" Condition="'$(ImageOptimizerWebpCachePath)'!='' and Exists('$(ImageOptimizerWebpCachePath)')" />
+            <_ImageOptimizerWebpTrackedFiles Include="$(_ImageOptimizerWebpTargetsPath);$(MSBuildProjectFullPath);$(MSBuildAllProjects);$(ProjectAssetsFile);$(ImageOptimizerWebpBuildTasksDllPath)" />
+        </ItemGroup>
+        <WriteLinesToFile File="$(_ImageOptimizerWebpInputManifest)"
+                          Lines="@(_ImageOptimizerWebpTrackedFiles->'%(FullPath)|%(ModifiedTime)');ImageOptimizerWebpCachePath=$(ImageOptimizerWebpCachePath);ImageOptimizerWebpOutputPath=$(ImageOptimizerWebpOutputPath);ImageOptimizerWebpBuildTasksDllPath=$(ImageOptimizerWebpBuildTasksDllPath);ImageOptimizerWebpEffort=$(ImageOptimizerWebpEffort);ImageOptimizerWebpEnabled=$(ImageOptimizerWebpEnabled);ImageOptimizerWebpFailOnError=$(ImageOptimizerWebpFailOnError);ImageOptimizerWebpForce=$(ImageOptimizerWebpForce);ImageOptimizerWebpLossless=$(ImageOptimizerWebpLossless);ImageOptimizerWebpQuality=$(ImageOptimizerWebpQuality);ImageOptimizerWebpSourceExtensions=$(ImageOptimizerWebpSourceExtensions);ImageOptimizerWebpStripMetadata=$(ImageOptimizerWebpStripMetadata);ImageOptimizerWebpWwwRootPath=$(ImageOptimizerWebpWwwRootPath)"
+                          Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <Touch Files="$(_ImageOptimizerWebpSuccessStamp)" AlwaysCreate="true" />
     </Target>
 </Project>
