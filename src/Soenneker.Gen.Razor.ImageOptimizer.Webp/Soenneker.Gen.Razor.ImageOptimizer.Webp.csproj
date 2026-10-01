@@ -21,7 +21,7 @@
         <AssemblyName>Soenneker.Gen.Razor.ImageOptimizer.Webp</AssemblyName>
         <PackageId>Soenneker.Gen.Razor.ImageOptimizer.Webp</PackageId>
         <PackageTags>gen razor imageoptimizer webp generator image optimizer libvips externalgenerator imageoptimizerwebp image-optimizer dotnet</PackageTags>
-        <Copyright>Copyright Ã‚Â© 2026 Jake Soenneker</Copyright>
+        <Copyright>Copyright © 2026 Jake Soenneker</Copyright>
         <Authors>Jake Soenneker</Authors>
         <Company>https://soenneker.com</Company>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
