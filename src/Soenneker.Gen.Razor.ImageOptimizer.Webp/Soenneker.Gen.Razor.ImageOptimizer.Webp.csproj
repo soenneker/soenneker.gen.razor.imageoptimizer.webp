@@ -21,7 +21,7 @@
         <AssemblyName>Soenneker.Gen.Razor.ImageOptimizer.Webp</AssemblyName>
         <PackageId>Soenneker.Gen.Razor.ImageOptimizer.Webp</PackageId>
         <PackageTags>gen razor imageoptimizer webp generator image optimizer libvips externalgenerator imageoptimizerwebp image-optimizer dotnet</PackageTags>
-        <Copyright>Copyright © 2026 Jake Soenneker</Copyright>
+        <Copyright>Copyright Ã‚Â© 2026 Jake Soenneker</Copyright>
         <Authors>Jake Soenneker</Authors>
         <Company>https://soenneker.com</Company>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -60,18 +60,34 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" PrivateAssets="all" />
     </ItemGroup>
+    <PropertyGroup>
+        <ImageOptimizerWebpNativeRuntimeIdentifier Condition="'$(ImageOptimizerWebpNativeRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</ImageOptimizerWebpNativeRuntimeIdentifier>
+        <ImageOptimizerWebpNativeArtifactsDir Condition="'$(ImageOptimizerWebpNativeArtifactsDir)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../artifacts/native'))</ImageOptimizerWebpNativeArtifactsDir>
+        <_ImageOptimizerWebpNativeExecutable>Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks</_ImageOptimizerWebpNativeExecutable>
+        <_ImageOptimizerWebpNativeExecutable Condition="$([System.String]::Copy('$(ImageOptimizerWebpNativeRuntimeIdentifier)').StartsWith('win-'))">$(_ImageOptimizerWebpNativeExecutable).exe</_ImageOptimizerWebpNativeExecutable>
+    </PropertyGroup>
 
-    <Target Name="BuildBuildTasksTool" BeforeTargets="Pack" Condition="'$(IsPackable)' == 'true'">
-
-        <MSBuild Projects="..\Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks\Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.csproj" Targets="Build" Properties="Configuration=$(Configuration);NoBuild=false" RemoveProperties="TargetFramework;TargetFrameworks" BuildInParallel="true" />
-
-        <Error Condition="!Exists('..\Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks\bin\$(Configuration)\Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.dll')" Text="BuildTasks output missing. Aborting pack to avoid publishing a broken package." />
+    <Target Name="BuildBuildTasksTool" BeforeTargets="Build"
+            Condition="'$(ImageOptimizerWebpUsePrebuiltNativeTools)' != 'true'"
+            Inputs="@(ImageOptimizerWebpNativeSource);../Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks/obj/project.assets.json"
+            Outputs="$(ImageOptimizerWebpNativeArtifactsDir)/$(ImageOptimizerWebpNativeRuntimeIdentifier)/$(_ImageOptimizerWebpNativeExecutable)">
+        <Exec Command="dotnet publish &quot;$(MSBuildProjectDirectory)/../Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks/Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.csproj&quot; --configuration Release --runtime $(ImageOptimizerWebpNativeRuntimeIdentifier) --output &quot;$(ImageOptimizerWebpNativeArtifactsDir)/$(ImageOptimizerWebpNativeRuntimeIdentifier)&quot;" />
     </Target>
+
+    <ItemGroup>
+        <ImageOptimizerWebpNativeSource Include="../Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks/**/*.cs;../Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks/*.csproj"
+                             Exclude="../Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks/bin/**;../Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks/obj/**" />
+    </ItemGroup>
 
     <Target Name="AddBuildTasksOutputToPackage" DependsOnTargets="BuildBuildTasksTool">
         <ItemGroup>
-            <TfmSpecificPackageFile Include="..\Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks\bin\$(Configuration)\**\*.*"
-                                    PackagePath="buildTransitive/%(RecursiveDir)" />
+            <_ImageOptimizerWebpRequiredRuntime Include="win-x64;linux-x64" Condition="'$(ImageOptimizerWebpUsePrebuiltNativeTools)' == 'true'" />
+            <_ImageOptimizerWebpNativeFile Include="$(ImageOptimizerWebpNativeArtifactsDir)/**/*"
+                                Exclude="$(ImageOptimizerWebpNativeArtifactsDir)/win-x64/Resources/linux-x64/**;$(ImageOptimizerWebpNativeArtifactsDir)/linux-x64/Resources/win-x64/**;$(ImageOptimizerWebpNativeArtifactsDir)/**/*.pdb;$(ImageOptimizerWebpNativeArtifactsDir)/**/*.dbg;$(ImageOptimizerWebpNativeArtifactsDir)/**/*.dSYM/**" />
+            <TfmSpecificPackageFile Include="@(_ImageOptimizerWebpNativeFile)" PackagePath="tools/native/" />
         </ItemGroup>
+        <Error Condition="'@(_ImageOptimizerWebpRequiredRuntime)' != '' and !Exists('$(ImageOptimizerWebpNativeArtifactsDir)/%(_ImageOptimizerWebpRequiredRuntime.Identity)/Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks') and !Exists('$(ImageOptimizerWebpNativeArtifactsDir)/%(_ImageOptimizerWebpRequiredRuntime.Identity)/Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.exe')"
+               Text="Missing native imageoptimizer.webp tool for %(_ImageOptimizerWebpRequiredRuntime.Identity)." />
+        <Error Condition="'@(_ImageOptimizerWebpNativeFile)' == ''" Text="Native imageoptimizer.webp tools are missing. Publish BuildTasks before packing." />
     </Target>
 </Project>

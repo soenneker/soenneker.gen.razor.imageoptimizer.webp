@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\src\Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks\Soenneker.Gen.Razor.ImageOptimizer.Webp.BuildTasks.csproj" />
         <ProjectReference Include="..\..\src\Soenneker.Gen.Razor.ImageOptimizer.Webp\Soenneker.Gen.Razor.ImageOptimizer.Webp.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
     </ItemGroup>
 
