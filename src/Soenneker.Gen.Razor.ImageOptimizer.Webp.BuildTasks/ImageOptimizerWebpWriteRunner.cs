@@ -73,7 +73,7 @@ public sealed class ImageOptimizerWebpWriteRunner : IImageOptimizerWebpWriteRunn
         if (result == 0 && failOnError && !string.Equals(settings, previousSettings, StringComparison.Ordinal))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(settingsPath)!);
-            await _fileUtil.Write(settingsPath, settings, cancellationToken: cancellationToken);
+            await _fileUtil.WriteAtomically(settingsPath, settings, cancellationToken: cancellationToken);
         }
         return result;
     }
